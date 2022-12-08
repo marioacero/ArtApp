@@ -9,15 +9,18 @@
  */
 
 import React from 'react';
-import { SafeAreaView, Text } from 'react-native';
-import { useTranslate } from 'src/i18n/useTranslate';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from 'src/domain/api/queryClient';
+import { NavigationContainer } from '@react-navigation/native';
+import { HomeStack } from 'src/navigation/HomeNavigatior';
 
 const App = () => {
-  const { t } = useTranslate();
   return (
-    <SafeAreaView>
-      <Text>{t('app_title')}</Text>
-    </SafeAreaView>
+    <QueryClientProvider client={queryClient}>
+      <NavigationContainer>
+        <HomeStack />
+      </NavigationContainer>
+    </QueryClientProvider>
   );
 };
 
