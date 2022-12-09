@@ -1,24 +1,50 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { FC, useEffect, useRef } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import { Text, View, Animated } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import { SharedElement } from 'react-navigation-shared-element';
 import LinearGradientComponent from 'src/components/LinearGradient';
 import { ROUTES } from 'src/navigation/Routes';
-import {
-  HomeStackNavProps,
-  useHomeNavigation,
-} from 'src/navigation/useTypedNavigation';
-import styles from './DetailsScreen.styles';
+import { HomeStackNavProps } from 'src/navigation/useTypedNavigation';
+import { styles, imgStyles } from './DetailsScreen.styles';
 import { Icon } from '@rneui/themed';
-import { TouchableOpacity } from 'react-native-gesture-handler';
+import ArtButton from 'src/components/ArtButton';
+import { useFavoritesContext } from 'src/hooks/useFavorites';
+import { COLORS } from 'src/utils/colors';
+import { useTranslate } from 'src/i18n/useTranslate';
 
-const DetailsScreen: FC<HomeStackNavProps<ROUTES.Details>> = ({ route }) => {
-  const { item } = route.params;
-  const navigation = useHomeNavigation();
+const DetailsScreen: FC<HomeStackNavProps<ROUTES.Details>> = ({
+  route,
+  navigation,
+}) => {
+  const { item, imgSize } = route.params;
+  const [isFavorite, setIsFavorite] = useState(false);
   const opacity = useRef(new Animated.Value(0)).current;
+  const { state, updateStateFavItems } = useFavoritesContext();
+  const { t } = useTranslate();
+
+  const checkIfFavorite = () => {
+    const isFound = state.items.some(element => {
+      return element.id === item.id;
+    });
+    setIsFavorite(isFound);
+  };
+
+  const onPressFavorite = () => {
+    let favorites = state.items;
+    if (isFavorite) {
+      favorites = favorites.filter(fav => {
+        return fav.id !== item.id;
+      });
+    } else {
+      favorites.push(item);
+    }
+    updateStateFavItems(favorites);
+    setIsFavorite(!isFavorite);
+  };
 
   useEffect(() => {
+    checkIfFavorite();
     Animated.timing(opacity, {
       toValue: 1,
       duration: 250,
@@ -28,10 +54,10 @@ const DetailsScreen: FC<HomeStackNavProps<ROUTES.Details>> = ({ route }) => {
   }, []);
 
   return (
-    <View style={{ backgroundColor: 'black', flex: 1 }}>
+    <View style={styles.container}>
       <SharedElement id={`item.${item.image_id}.photo`}>
         <FastImage
-          style={{ width: '100%', height: 300 }}
+          style={imgStyles(imgSize).image}
           source={{
             uri: `https://www.artic.edu/iiif/2/${item.image_id}/full/843,/0/default.jpg`,
             priority: FastImage.priority.normal,
@@ -48,71 +74,32 @@ const DetailsScreen: FC<HomeStackNavProps<ROUTES.Details>> = ({ route }) => {
             size={20}
             name="close"
             type="Ionicons"
-            color="black"
-            onPress={() => console.log('hello')}
+            color={COLORS.black}
+            onPress={() => navigation.goBack()}
           />
         </View>
         <View style={styles.favIcon}>
           <Icon
-            size={18}
-            name="heart-o"
+            size={20}
+            name={isFavorite ? 'heart' : 'heart-o'}
             type="font-awesome"
-            color="black"
-            onPress={() => navigation.goBack()}
+            color={isFavorite ? COLORS.favActive : COLORS.black}
+            onPress={onPressFavorite}
           />
         </View>
       </Animated.View>
-      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-          <Text
-            style={{
-              color: 'white',
-              fontSize: 24,
-              fontWeight: '900',
-              width: '80%',
-            }}>
-            {item.artist_title}
-          </Text>
-          <Text style={{ color: 'grey' }}>{item.date_display}</Text>
+      <Animated.View style={[styles.contentContainer, { opacity: opacity }]}>
+        <View style={styles.titleContainer}>
+          <Text style={styles.artist}>{item.artist_title}</Text>
+          <Text style={styles.year}>{item.date_display}</Text>
         </View>
-        <Text style={{ color: 'white', fontSize: 16, fontStyle: 'italic' }}>
-          {item.artwork_type_title}
-        </Text>
-        <Text style={{ color: 'white', paddingTop: 32 }}>Dimensions:</Text>
-        <Text style={{ color: 'white', paddingTop: 6 }}>{item.dimensions}</Text>
-      </View>
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 50,
-          width: '100%',
-          height: 50,
-          justifyContent: 'center',
-          paddingHorizontal: 16,
-        }}>
-        <TouchableOpacity
-          style={{
-            backgroundColor: '#af2489',
-            height: '100%',
-            justifyContent: 'center',
-            borderRadius: 10,
-          }}>
-          <Text
-            style={{
-              textAlign: 'center',
-              color: 'white',
-              fontWeight: '700',
-              fontSize: 16,
-            }}>
-            Add to favorites
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <Text style={styles.artType}>{item.artwork_type_title}</Text>
+        <Text style={styles.dimensions}>{t('dimensions')}</Text>
+        <Text style={styles.dimensionsValue}>{item.dimensions}</Text>
+      </Animated.View>
+      {!isFavorite ? (
+        <ArtButton title={t('add_favorites')} onPress={onPressFavorite} />
+      ) : null}
     </View>
   );
 };

@@ -1,3 +1,7 @@
 {
-  "app_title": "Art app Mobile by Modak from Home"
+  "home_title": "Art by Modak!",
+  "add_favorites": "Add to Favorites",
+  "dimensions": "Dimensions",
+  "favorites": "Favorites",
+  "empty_state": "You haven't added any artwork to your favorites yet. Tap the Heart button to add artwork to your favorites"
 }

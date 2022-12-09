@@ -24,6 +24,14 @@ const styles = (params?: ArtworkStyleProps) =>
       paddingBottom: 5,
       fontWeight: 'bold',
     },
+    favContainer: {
+      position: 'absolute',
+      zIndex: 3,
+      backgroundColor: 'rgba(0,0,0, 0.1)',
+      borderRadius: 10,
+      right: 16,
+      top: 12,
+    },
   });
 
 export default styles;

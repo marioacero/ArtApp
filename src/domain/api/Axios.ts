@@ -7,7 +7,7 @@ const fetchArtworks = async () => {
     const response = await Axios.get('artworks');
     return response.data as ArtWorkResponse;
   } catch (err) {
-    return logger.error(err, 'Error getting current user');
+    return logger.error(err, 'Error getting artworks endpoint');
   }
 };
 
